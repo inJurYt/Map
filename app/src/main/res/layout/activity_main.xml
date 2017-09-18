@@ -9,18 +9,51 @@
     <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
-
-        <SearchView
-            android:layout_width="fill_parent"
-            android:layout_height="45dp"
-            android:queryHint="请输入搜索内容" />
-
+        android:orientation="vertical"
+        android:id="@+id/linearLayout">
+        <EditText
+            android:id="@+id/et_click"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:hint="@string/et_click_hint"
+            android:clickable="true"
+            android:focusable="false"/>
         <com.baidu.mapapi.map.MapView
             android:id="@+id/bmapView"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="530dp"
             android:clickable="true"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            style="?android:attr/buttonBarStyle">
+            <Button
+                android:id="@+id/btn_location"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/btn_location"
+                style="?android:attr/buttonBarButtonStyle"/>
+            <Button
+                android:id="@+id/btn_satellite"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/satellite"
+                style="?android:attr/buttonBarButtonStyle"/>
+            <Button
+                android:id="@+id/btn_traffic"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/traffic"
+                style="?android:attr/buttonBarButtonStyle"/>
+            <Button
+                android:id="@+id/unknown"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/btn_unknown"
+                style="?android:attr/buttonBarButtonStyle"/>
+        </LinearLayout>
     </LinearLayout>
+
 
 </android.support.constraint.ConstraintLayout>

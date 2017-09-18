@@ -1,3 +1,17 @@
 <resources>
     <string name="app_name">Map</string>
+
+    <string name="et_click_hint">搜索</string>
+    <string name="btn_location">定位</string>
+    <string name="satellite">卫星图</string>
+    <string name="traffic">交通图</string>
+    <string name="btn_unknown">待定</string>
+
+    <string name="et_search_hint">请输入搜索内容</string>
+    <string name="btn_nearbySearch">搜周边</string>
+    <string name="btn_citySearch">搜城市</string>
+    <string name="btn_pre">上一页</string>
+    <string name="btn_next">下一页</string>
+
+
 </resources>
