@@ -47,10 +47,10 @@
                 android:text="@string/traffic"
                 style="?android:attr/buttonBarButtonStyle"/>
             <Button
-                android:id="@+id/unknown"
+                android:id="@+id/btn_weather"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/btn_unknown"
+                android:text="@string/btn_weather"
                 style="?android:attr/buttonBarButtonStyle"/>
         </LinearLayout>
     </LinearLayout>

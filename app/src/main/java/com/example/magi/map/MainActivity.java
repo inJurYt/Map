@@ -11,6 +11,8 @@ import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.SimpleAdapter;
@@ -48,6 +50,11 @@ import com.baidu.mapapi.search.poi.PoiSearch;
 
 import org.w3c.dom.Text;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -58,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
     private Button btn_location;
     private Button btn_satellite;
     private Button btn_traffic;
+    private Button btn_weather;
     private TextView tvForInfoWindow;
     private MapView bmapView;
     private BaiduMap mBaiduMap;
@@ -66,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean isTrafficMapOpen;
     private PoiSearch mPoiSearch;
     private InfoWindow infoWindow;
+    private long firstTime = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
         btn_location = (Button)findViewById(R.id.btn_location);
         btn_satellite = (Button)findViewById(R.id.btn_satellite);
         btn_traffic = (Button)findViewById(R.id.btn_traffic);
+        btn_weather = (Button)findViewById(R.id.btn_weather);
 
         initMapView(isSatelliteOpen, isTrafficMapOpen);
 
@@ -97,6 +107,7 @@ public class MainActivity extends AppCompatActivity {
         btn_location.setOnClickListener(btn_locationListener);
         btn_traffic.setOnClickListener(btn_trafficListener);
         btn_satellite.setOnClickListener(btn_satelliteListener);
+        btn_weather.setOnClickListener(btn_weatherListener);
         mBaiduMap.setOnMapClickListener(mOnMapClickListener);
     }
 
@@ -168,7 +179,7 @@ public class MainActivity extends AppCompatActivity {
         option.setIsNeedAddress(true);
         option.setOpenGps(true);
         option.setCoorType("bd09ll");
-        option.setWifiCacheTimeOut(30000);
+        option.setWifiCacheTimeOut(1000);
         return option;
     }
 
@@ -246,6 +257,38 @@ public class MainActivity extends AppCompatActivity {
         public void onClick(View v) {
             mLocationClient.start();
             mLocationClient.requestLocation();
+        }
+    };
+
+    View.OnClickListener btn_weatherListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    HttpURLConnection connection;
+                    SharedPreferences sharedPreferences = getSharedPreferences("setting", Context.MODE_PRIVATE);
+                    String city = sharedPreferences.getString("city", "");
+                    try{
+                        URL url = new URL("https://way.jd.com/he/freeweather?city=" + city +"&appkey=3e5c10a453a26ef13a104e5b6e3fe1c0");
+                        connection = (HttpURLConnection)url.openConnection();
+                        connection.setRequestMethod("GET");
+                        connection.setConnectTimeout(5000);
+                        connection.setReadTimeout(5000);
+                        InputStream in = connection.getInputStream();
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+                        StringBuilder response = new StringBuilder();
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            response.append(line);
+                        }
+                        Log.i("TAG", response.toString());
+                    }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
         }
     };
 
@@ -344,4 +387,21 @@ public class MainActivity extends AppCompatActivity {
             mBaiduMap.hideInfoWindow();
         }
     };
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        switch (keyCode){
+            case KeyEvent.KEYCODE_BACK:
+                long secondTime = System.currentTimeMillis();
+                if(secondTime - firstTime > 2000){
+                    Toast.makeText(MainActivity.this, "再按一次退出程序", Toast.LENGTH_SHORT).show();
+                    firstTime = secondTime;
+                    return true;
+                }else{
+                    System.exit(0);
+                }
+                break;
+        }
+        return super.onKeyUp(keyCode, event);
+    }
 }

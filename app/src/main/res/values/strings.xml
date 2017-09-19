@@ -5,7 +5,7 @@
     <string name="btn_location">定位</string>
     <string name="satellite">卫星图</string>
     <string name="traffic">交通图</string>
-    <string name="btn_unknown">待定</string>
+    <string name="btn_weather">天气</string>
 
     <string name="et_search_hint">请输入搜索内容</string>
     <string name="btn_nearbySearch">搜周边</string>
