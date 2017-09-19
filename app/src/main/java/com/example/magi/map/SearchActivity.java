@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Xml;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
@@ -36,6 +37,8 @@ public class SearchActivity extends AppCompatActivity {
     private ListView lv_result;
     private Button btn_pre;
     private Button btn_next;
+    private Button btn_first;
+    private Button btn_last;
     private Button btn_citySearch;
     private Button btn_nearbySearch;
     private TextView tv_totalPage;
@@ -51,7 +54,6 @@ public class SearchActivity extends AppCompatActivity {
     List<PoiInfo> mList;
     private InputMethodManager inputManager;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,6 +63,8 @@ public class SearchActivity extends AppCompatActivity {
         lv_result = (ListView)findViewById(R.id.lv_result);
         btn_pre = (Button)findViewById(R.id.btn_pre);
         btn_next = (Button)findViewById(R.id.btn_next);
+        btn_first = (Button)findViewById(R.id.btn_first);
+        btn_last = (Button)findViewById(R.id.btn_last);
         btn_citySearch = (Button)findViewById(R.id.btn_citySearch);
         btn_nearbySearch = (Button)findViewById(R.id.btn_nearbySearch);
         tv_currPage = (TextView)findViewById(R.id.currPage);
@@ -84,6 +88,8 @@ public class SearchActivity extends AppCompatActivity {
         mPoiSearch.setOnGetPoiSearchResultListener(poiResultListener);
         btn_pre.setOnClickListener(btn_preListener);
         btn_next.setOnClickListener(btn_nextListener);
+        btn_first.setOnClickListener(btn_firstListener);
+        btn_last.setOnClickListener(btn_lastListener);
         btn_nearbySearch.setOnClickListener(btn_nearbySearchListener);
         btn_citySearch.setOnClickListener(btn_citySearchListener);
         lv_result.setOnItemClickListener(itemListener);
@@ -116,7 +122,7 @@ public class SearchActivity extends AppCompatActivity {
         PoiNearbySearchOption option = new PoiNearbySearchOption();
         option.keyword(searchText);
         option.location(latLng);
-        option.radius(1000);
+        option.radius(2000);
         option.pageNum(currPage);
         option.pageCapacity(50);
         option.sortType(PoiSortType.distance_from_near_to_far);
@@ -165,6 +171,30 @@ public class SearchActivity extends AppCompatActivity {
         }
     };
 
+    View.OnClickListener btn_firstListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            currPage = 0;
+            if(searchMode == 0){
+                mPoiSearch.searchNearby(getNearbySearchOption(currPage, latLng));
+            }else {
+                mPoiSearch.searchInCity(getCitySearchOption(currPage));
+            }
+        }
+    };
+
+    View.OnClickListener btn_lastListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            currPage = totalPage - 1;
+            if(searchMode == 0){
+                mPoiSearch.searchNearby(getNearbySearchOption(currPage, latLng));
+            }else {
+                mPoiSearch.searchInCity(getCitySearchOption(currPage));
+            }
+        }
+    };
+
     ListView.OnItemClickListener itemListener = new ListView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -185,6 +215,8 @@ public class SearchActivity extends AppCompatActivity {
                 tv_totalNum.setVisibility(View.INVISIBLE);
                 btn_next.setVisibility(View.INVISIBLE);
                 btn_pre.setVisibility(View.INVISIBLE);
+                btn_first.setVisibility(View.INVISIBLE);
+                btn_last.setVisibility(View.INVISIBLE);
                 Toast.makeText(SearchActivity.this, "请输入搜索内容", Toast.LENGTH_SHORT).show();
                 return;
             }
@@ -208,6 +240,8 @@ public class SearchActivity extends AppCompatActivity {
                 tv_totalNum.setVisibility(View.INVISIBLE);
                 btn_next.setVisibility(View.INVISIBLE);
                 btn_pre.setVisibility(View.INVISIBLE);
+                btn_first.setVisibility(View.INVISIBLE);
+                btn_last.setVisibility(View.INVISIBLE);
                 Toast.makeText(SearchActivity.this, "请输入搜索内容", Toast.LENGTH_SHORT).show();
                 return;
             }
@@ -232,6 +266,8 @@ public class SearchActivity extends AppCompatActivity {
                 tv_totalNum.setVisibility(View.INVISIBLE);
                 btn_next.setVisibility(View.INVISIBLE);
                 btn_pre.setVisibility(View.INVISIBLE);
+                btn_first.setVisibility(View.INVISIBLE);
+                btn_last.setVisibility(View.INVISIBLE);
             } else {
                 mPoiResult = poiResult;
                 totalPage = poiResult.getTotalPageNum();
@@ -256,6 +292,8 @@ public class SearchActivity extends AppCompatActivity {
                 tv_totalNum.setVisibility(View.VISIBLE);
                 btn_next.setVisibility(View.VISIBLE);
                 btn_pre.setVisibility(View.VISIBLE);
+                btn_first.setVisibility(View.VISIBLE);
+                btn_last.setVisibility(View.VISIBLE);
             }
         }
 

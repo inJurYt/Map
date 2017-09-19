@@ -74,6 +74,13 @@
             android:gravity="center"
             style="?android:attr/buttonBarStyle">
             <Button
+                android:id="@+id/btn_first"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/btn_first"
+                android:visibility="invisible"
+                style="?android:attr/buttonBarButtonStyle"/>
+            <Button
                 android:id="@+id/btn_pre"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -85,6 +92,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/btn_next"
+                android:visibility="invisible"
+                style="?android:attr/buttonBarButtonStyle"/>
+            <Button
+                android:id="@+id/btn_last"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/btn_last"
                 android:visibility="invisible"
                 style="?android:attr/buttonBarButtonStyle"/>
         </LinearLayout>

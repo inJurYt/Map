@@ -12,6 +12,8 @@
     <string name="btn_citySearch">搜城市</string>
     <string name="btn_pre">上一页</string>
     <string name="btn_next">下一页</string>
+    <string name="btn_first">首页</string>
+    <string name="btn_last">尾页</string>
 
 
 </resources>
