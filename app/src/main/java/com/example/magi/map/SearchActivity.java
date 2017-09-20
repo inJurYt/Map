@@ -71,12 +71,6 @@ public class SearchActivity extends AppCompatActivity {
         tv_totalNum = (TextView)findViewById(R.id.totalNum);
 
         inputManager = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-
-        String s = getIntent().getStringExtra("searchText");
-        if(!s.equals("")){
-            et_search.setText(s);
-            et_search.selectAll();
-        }
     }
 
     @Override

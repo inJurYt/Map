@@ -1,11 +1,11 @@
 <resources>
     <string name="app_name">Map</string>
 
-    <string name="et_click_hint">搜索</string>
+    <string name="btn_goSearch">搜索</string>
     <string name="btn_location">定位</string>
     <string name="satellite">卫星图</string>
     <string name="traffic">交通图</string>
-    <string name="btn_weather">天气</string>
+    <string name="btn_weather">更新</string>
 
     <string name="et_search_hint">请输入搜索内容</string>
     <string name="btn_nearbySearch">搜周边</string>

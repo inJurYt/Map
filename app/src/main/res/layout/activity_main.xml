@@ -11,13 +11,24 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:id="@+id/linearLayout">
-        <EditText
-            android:id="@+id/et_click"
-            android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:hint="@string/et_click_hint"
-            android:clickable="true"
-            android:focusable="false"/>
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/tv_weather"
+                android:layout_width="305dp"
+                android:layout_height="40dp"
+                android:gravity="left"
+                android:textSize="15sp"
+                android:text="等待加载……"/>
+            <Button
+                android:id="@+id/btn_weather"
+                android:layout_width="55dp"
+                android:layout_height="40dp"
+                android:text="@string/btn_weather"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_toRightOf="@+id/tv_weather"/>
+        </RelativeLayout>
         <com.baidu.mapapi.map.MapView
             android:id="@+id/bmapView"
             android:layout_width="match_parent"
@@ -47,10 +58,10 @@
                 android:text="@string/traffic"
                 style="?android:attr/buttonBarButtonStyle"/>
             <Button
-                android:id="@+id/btn_weather"
+                android:id="@+id/btn_goSearch"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/btn_weather"
+                android:text="@string/btn_goSearch"
                 style="?android:attr/buttonBarButtonStyle"/>
         </LinearLayout>
     </LinearLayout>

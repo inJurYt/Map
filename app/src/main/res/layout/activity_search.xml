@@ -26,14 +26,16 @@
                 android:layout_height="wrap_content"
                 android:layout_toRightOf="@+id/et_search"
                 android:layout_toEndOf="@+id/et_search"
-                android:text="@string/btn_nearbySearch"/>
+                android:text="@string/btn_nearbySearch"
+                style="?android:attr/buttonBarButtonStyle"/>
             <Button
                 android:id="@+id/btn_citySearch"
                 android:layout_width="68dp"
                 android:layout_height="wrap_content"
                 android:layout_toRightOf="@+id/btn_nearbySearch"
                 android:layout_toEndOf="@+id/btn_nearbySearch"
-                android:text="@string/btn_citySearch"/>
+                android:text="@string/btn_citySearch"
+                style="?android:attr/buttonBarButtonStyle"/>
             <ListView
                 android:id="@+id/lv_result"
                 android:layout_width="match_parent"
