@@ -335,19 +335,13 @@ public class MainActivity extends AppCompatActivity {
             final View view = LayoutInflater.from(getApplicationContext()).inflate(R.layout.popwindow_marker, null, false);
             Button btn_info = (Button)view.findViewById(R.id.btn_info);
             if(info.getUid().equals("1")){
-                btn_info.setText("  名称:" + toShortString(info.getName(), 15) + "\r\n  地址:" + toShortString(info.getAddress(), 15) + "\r\n  类型:" + info.getStyle() + "\r\n  总车位:" + info.getTotal() + "个      空车位：" + info.getEmpty() + "个\r\n  价格(时/元):" + info.getTime1() +"(0-8点)," + info.getTime2() + "(8-16)," + info.getTime3() + "(16-24)" );
+                btn_info.setText("  名称:" + toShortString(info.getName(), 15) + "\r\n  地址:" + toShortString(info.getAddress(), 15) + "\r\n  类型:" + info.getStyle() + "\r\n  总车位: " + info.getTotal() + "个\r\n  空车位: " + info.getEmpty() + "个\r\n  价格:\r\n           0-8点:" + info.getTime1() +"时/元\r\n           8-16点:," + info.getTime2() + "时/元\r\n           16-24点:," + info.getTime3() + "时/元");
             }
             else {
                 btn_info.setText("  名称:" + toShortString(info.getName(), 15) + "\r\n  地址:" + toShortString(info.getAddress(), 15));
             }
 
             final Button btn_go = (Button)view.findViewById(R.id.btn_go);
-            btn_go.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Toast.makeText(MainActivity.this, "准备前往" + info.getName(), Toast.LENGTH_SHORT).show();
-                }
-            });
             final PopupWindow popWindow = new PopupWindow(view, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true);
             popWindow.setTouchable(true);
             popWindow.setTouchInterceptor(new View.OnTouchListener() {
@@ -358,6 +352,14 @@ public class MainActivity extends AppCompatActivity {
             });
             popWindow.setBackgroundDrawable(new ColorDrawable(0x00000000));
             popWindow.showAsDropDown((View)tvForInfoWindow, 0, 500);
+            btn_go.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(MainActivity.this, "准备前往" + info.getName(), Toast.LENGTH_SHORT).show();
+                    mBaiduMap.hideInfoWindow();
+                    popWindow.dismiss();
+                }
+            });
 
             return false;
         }

@@ -22,6 +22,7 @@ public class Park {
     private static String radius = "5000";
     private static String page_size = "50";
     private static String sn;
+    private static String sortby = "distance:1";
 
 
     public static PoiList getPark(final LatLng latLng, int currPage){
@@ -34,11 +35,14 @@ public class Park {
         map.put("geotable_id", geotable_id);
         map.put("radius", radius);
         map.put("page_size", page_size);
+        map.put("sortby", sortby);
+
+
         sn = SNCal.getSn(map);
 
         try{
             URL url = new URL("http://api.map.baidu.com/geosearch/v3/nearby?location=" + latLng.longitude + "," + latLng.latitude + "&page_index=" + currPage +
-                    "&ak=" + ak + "&geotable_id=" + geotable_id + "&radius=" + radius + "&page_size=" + page_size + "&sn=" + sn);
+                    "&ak=" + ak + "&geotable_id=" + geotable_id + "&radius=" + radius + "&page_size=" + page_size + "&sortby=" + sortby + "&sn=" + sn);
             connection = (HttpURLConnection)url.openConnection();
             connection.setRequestMethod("GET");
             connection.setConnectTimeout(5000);

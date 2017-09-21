@@ -29,6 +29,7 @@ public class SNCal {
             for (Map.Entry<?, ?> pair : data.entrySet()) {
                 queryString.append(pair.getKey() + "=");
                 String ss[] = pair.getValue().toString().split(",");
+                String bb[] = pair.getValue().toString().split(":");
                 if(ss.length > 1){
                     for(String s : ss){
                         queryString.append(URLEncoder.encode(s, "UTF-8") + ",");
@@ -37,7 +38,16 @@ public class SNCal {
                     queryString.append("&");
                 }
                 else{
-                    queryString.append(URLEncoder.encode((String) pair.getValue(), "UTF-8") + "&");
+                    if(bb.length > 1){
+                        for(String b : bb){
+                            queryString.append(URLEncoder.encode(b, "UTF-8") + ":");
+                        }
+                        queryString.deleteCharAt(queryString.length()-1);
+                        queryString.append("&");
+                    }
+                    else {
+                        queryString.append(URLEncoder.encode((String) pair.getValue(), "UTF-8") + "&");
+                    }
                 }
             }
         }
