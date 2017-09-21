@@ -10,7 +10,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 
 public class Weather {
     private   static String weather;
@@ -48,14 +47,13 @@ public class Weather {
             JSONObject now = jsonObject2.getJSONObject("now");
             JSONObject cond = now.getJSONObject("cond");
             JSONObject basic = jsonObject2.getJSONObject("basic");
-            //JSONObject update = basic.getJSONObject("update");
+            JSONObject update = basic.getJSONObject("update");
             String wea_vis = now.optString("vis");
             String wea_fl = now.optString("fl");
             String wea_text = cond.optString("txt");
             String wea_city = basic.optString("city");
-            //String wea_loc = update.optString("loc");
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-            return "天气:" + wea_text + "，体感温度:" + wea_fl + "℃，可见度:" + wea_vis + "\r\n城市:" + wea_city + "，更新时间:" + simpleDateFormat.format(Calendar.getInstance().getTime());
+            String wea_loc = update.optString("loc");
+            return "天气:" + wea_text + "，体感温度:" + wea_fl + "℃，可见度:" + wea_vis + "\r\n城市:" + wea_city + "，发布时间:" + wea_loc;
         }
         catch (JSONException e){
             e.printStackTrace();

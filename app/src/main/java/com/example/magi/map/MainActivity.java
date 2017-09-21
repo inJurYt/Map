@@ -3,17 +3,19 @@ package com.example.magi.map;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,23 +25,16 @@ import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
 import com.baidu.mapapi.SDKInitializer;
 import com.baidu.mapapi.map.BaiduMap;
-import com.baidu.mapapi.map.BitmapDescriptorFactory;
 import com.baidu.mapapi.map.InfoWindow;
 import com.baidu.mapapi.map.MapPoi;
 import com.baidu.mapapi.map.MapStatusUpdate;
 import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.Marker;
-import com.baidu.mapapi.map.MarkerOptions;
 import com.baidu.mapapi.map.MyLocationData;
-import com.baidu.mapapi.map.OverlayOptions;
-import com.baidu.mapapi.map.Polyline;
 import com.baidu.mapapi.model.LatLng;
-import com.baidu.mapapi.overlayutil.OverlayManager;
-import com.baidu.mapapi.search.poi.PoiResult;
 import com.baidu.mapapi.search.poi.PoiSearch;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -48,9 +43,10 @@ public class MainActivity extends AppCompatActivity {
     private Button btn_traffic;
     private Button btn_weather;
     private Button btn_goSearch;
-    private TextView tvForInfoWindow;
-    private TextView tv_weather;
+    private Button tv_weather;
+
     private InfoWindow infoWindow;
+    private TextView tvForInfoWindow;
 
     private MapView bmapView;
     private BaiduMap mBaiduMap;
@@ -86,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
         SDKInitializer.initialize(getApplicationContext());
         setContentView(R.layout.activity_main);
 
-        tv_weather = (TextView)findViewById(R.id.tv_weather);
+        tv_weather = (Button)findViewById(R.id.tv_weather);
         btn_weather = (Button)findViewById(R.id.btn_weather);
         btn_location = (Button)findViewById(R.id.btn_location);
         btn_satellite = (Button)findViewById(R.id.btn_satellite);
@@ -100,7 +96,6 @@ public class MainActivity extends AppCompatActivity {
         mLocationClient.setLocOption(getLocationOption());
         if(getIntent().getParcelableExtra("latLng") == null){
             mLocationClient.start();
-            GetWeather();
         }
     }
 
@@ -136,12 +131,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         bmapView.onResume();
-        if(getIntent().getParcelableExtra("mPoiResult") != null){
+        if(getIntent().getParcelableExtra("mPoiList") != null){
             mBaiduMap.clear();
 
             MyPoiOverlay overlay = new MyPoiOverlay(mBaiduMap, (BitmapDrawable)getResources().getDrawable(R.drawable.icon_map_marker));
-            PoiResult poiResult = getIntent().getParcelableExtra("mPoiResult");
-            overlay.setData(poiResult);
+            PoiList mPoiList = getIntent().getParcelableExtra("mPoiList");
+            List<Storage> lst = mPoiList.getStorageList();
+            overlay.setData(mPoiList);
             overlay.addToMap();
 
             LatLng lng = getIntent().getParcelableExtra("latLng");
@@ -151,12 +147,13 @@ public class MainActivity extends AppCompatActivity {
             mBaiduMap.setOnMarkerClickListener(mOnMarkerClickListener);
             tvForInfoWindow = new TextView(getApplicationContext());
             int index = getIntent().getIntExtra("index", 0);
-            tvForInfoWindow.setText(poiResult.getAllPoi().get(index).name);
             tvForInfoWindow.setTextColor(Color.BLACK);
             tvForInfoWindow.setBackgroundColor(Color.TRANSPARENT);
             tvForInfoWindow.setPadding(5, 10, 5, 10);
             tvForInfoWindow.setTextSize(15);
-            infoWindow = new InfoWindow(tvForInfoWindow, poiResult.getAllPoi().get(index).location, 0);
+            tvForInfoWindow.setText(lst.get(index).getName());
+            final Storage info = lst.get(index);
+            infoWindow = new InfoWindow(tvForInfoWindow, info.getLocation(), 0);
             mBaiduMap.showInfoWindow(infoWindow);
 
             SharedPreferences sharedPreferences = getSharedPreferences("setting", Context.MODE_PRIVATE);
@@ -210,7 +207,9 @@ public class MainActivity extends AppCompatActivity {
             mBaiduMap.animateMapStatus(mapStatusUpdate);
             Toast.makeText(MainActivity.this, "定位成功", Toast.LENGTH_SHORT).show();
             mLocationClient.stop();
-            tv_weather.setText(Weather.getWeather(location.getCity()));
+            if(weatherFirst){
+                GetWeather();
+            }
         }
     }
 
@@ -285,24 +284,24 @@ public class MainActivity extends AppCompatActivity {
     private void GetWeather(){
         SharedPreferences sharedPreferences = getSharedPreferences("setting", Context.MODE_PRIVATE);
         final String city = sharedPreferences.getString("city", "");
-        try{
-            Thread thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    weather = Weather.getWeather(city);
-                    if(weather != null && weather == ""){
-                        Message message = new Message();
-                        message.what = 0;
-                        weatherHandler.sendMessage(message);
-                    }
-                    else {
-                        Message message = new Message();
-                        message.what = 1;
-                        message.obj = weather;
-                        weatherHandler.sendMessage(message);
-                    }
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                weather = Weather.getWeather(city);
+                if(weather != null && weather == ""){
+                    Message message = new Message();
+                    message.what = 0;
+                    weatherHandler.sendMessage(message);
                 }
-            });
+                else {
+                    Message message = new Message();
+                    message.what = 1;
+                    message.obj = weather;
+                    weatherHandler.sendMessage(message);
+                }
+            }
+        });
+        try{
             thread.start();
         }
         catch (Exception e){
@@ -324,13 +323,54 @@ public class MainActivity extends AppCompatActivity {
 
     BaiduMap.OnMarkerClickListener mOnMarkerClickListener = new BaiduMap.OnMarkerClickListener() {
         @Override
-        public boolean onMarkerClick(Marker marker) {
-            tvForInfoWindow.setText(marker.getExtraInfo().getString("name"));
-            infoWindow = new InfoWindow(tvForInfoWindow, marker.getPosition(), 0);
+        public boolean onMarkerClick(Marker marker) {//TODO 待完善
+            final Storage info = (Storage)marker.getExtraInfo().getParcelable("info");
+            tvForInfoWindow.setText(info.getName());
+            android.graphics.Point p = mBaiduMap.getProjection().toScreenLocation(info.getLocation());
+            p.y -= 47;
+            LatLng latLng = mBaiduMap.getProjection().fromScreenLocation(p);
+            infoWindow = new InfoWindow(tvForInfoWindow, latLng, 0);
             mBaiduMap.showInfoWindow(infoWindow);
+
+            final View view = LayoutInflater.from(getApplicationContext()).inflate(R.layout.popwindow_marker, null, false);
+            Button btn_info = (Button)view.findViewById(R.id.btn_info);
+            if(info.getUid().equals("1")){
+                btn_info.setText("  名称:" + toShortString(info.getName(), 15) + "\r\n  地址:" + toShortString(info.getAddress(), 15) + "\r\n  类型:" + info.getStyle() + "\r\n  总车位:" + info.getTotal() + "个      空车位：" + info.getEmpty() + "个\r\n  价格(时/元):" + info.getTime1() +"(0-8点)," + info.getTime2() + "(8-16)," + info.getTime3() + "(16-24)" );
+            }
+            else {
+                btn_info.setText("  名称:" + toShortString(info.getName(), 15) + "\r\n  地址:" + toShortString(info.getAddress(), 15));
+            }
+
+            final Button btn_go = (Button)view.findViewById(R.id.btn_go);
+            btn_go.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(MainActivity.this, "准备前往" + info.getName(), Toast.LENGTH_SHORT).show();
+                }
+            });
+            final PopupWindow popWindow = new PopupWindow(view, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true);
+            popWindow.setTouchable(true);
+            popWindow.setTouchInterceptor(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    return false;
+                }
+            });
+            popWindow.setBackgroundDrawable(new ColorDrawable(0x00000000));
+            popWindow.showAsDropDown((View)tvForInfoWindow, 0, 500);
+
             return false;
         }
     };
+
+    public static String toShortString(String str, int length){
+        if(str.length() > length){
+            return str.substring(0, length - 1) + "\r\n              " + str.substring(length - 1, str.length());
+        }
+        else {
+            return str;
+        }
+    }
 
     InfoWindow.OnInfoWindowClickListener mOnInfoWindowClickListener = new InfoWindow.OnInfoWindowClickListener() {
         @Override

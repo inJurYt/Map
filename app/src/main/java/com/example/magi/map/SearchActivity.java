@@ -2,6 +2,8 @@ package com.example.magi.map;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -43,15 +45,53 @@ public class SearchActivity extends AppCompatActivity {
     private TextView tv_totalPage;
     private TextView tv_currPage;
     private TextView tv_totalNum;
+    private Button btn_parkSearch;
+
     private PoiSearch mPoiSearch;
     private int currPage;
     private int totalPage;
     private String searchText;
     private LatLng latLng;
-    private PoiResult mPoiResult;
     private int searchMode;
-    List<PoiInfo> mList;
     private InputMethodManager inputManager;
+    private PoiList mPoiList;
+    private List<Storage> mStorageList;
+
+    final android.os.Handler poiHandler = new android.os.Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            if(msg.what == 1){
+                if(mPoiList.getTotalNum() % 50 == 0){
+                    totalPage = mPoiList.getTotalNum() / 50;
+                }
+                else {
+                    totalPage = mPoiList.getTotalNum() / 50 + 1;
+                }
+                mPoiList.setTotalPage(totalPage);
+                int count = mPoiList.getCurrSize();
+                mStorageList = mPoiList.getStorageList();
+                List<Map<String, Object>> lst = new ArrayList<>();
+                for (int i = 0; i < count; i++) {
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("name", mStorageList.get(i).getName());
+                    item.put("address", mStorageList.get(i).getAddress());
+                    item.put("uid", mStorageList.get(i).getUid());
+                    lst.add(item);
+                }
+                SimpleAdapter adpater = new SimpleAdapter(getApplicationContext(), lst, R.layout.list_item, new String[]{"name", "address", "uid"}, new int[]{R.id.tv_name, R.id.tv_address, R.id.tv_uid});
+                lv_result.setAdapter(adpater);
+                tv_totalNum.setText("共" + mPoiList.getTotalNum() + "条");
+                tv_totalPage.setText("共" + totalPage + "页");
+                tv_currPage.setText("第" + (currPage + 1) + "页");
+                setPagingVisible(true);
+                searchMode = 2;
+            }
+            else {
+                Toast.makeText(SearchActivity.this, "未找到结果", Toast.LENGTH_SHORT).show();
+                setPagingVisible(false);
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +109,7 @@ public class SearchActivity extends AppCompatActivity {
         tv_currPage = (TextView)findViewById(R.id.currPage);
         tv_totalPage = (TextView)findViewById(R.id.totoalPage);
         tv_totalNum = (TextView)findViewById(R.id.totalNum);
+        btn_parkSearch = (Button)findViewById(R.id.btn_parkSearch);
 
         inputManager = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
     }
@@ -86,6 +127,10 @@ public class SearchActivity extends AppCompatActivity {
         btn_nearbySearch.setOnClickListener(btn_nearbySearchListener);
         btn_citySearch.setOnClickListener(btn_citySearchListener);
         lv_result.setOnItemClickListener(itemListener);
+        btn_parkSearch.setOnClickListener(btn_parkSearchListener);
+
+        mPoiList = new PoiList();
+        mStorageList = new ArrayList<>();
     }
 
     @Override
@@ -139,12 +184,7 @@ public class SearchActivity extends AppCompatActivity {
                 return;
             }
             currPage -= 1;
-            if(searchMode == 0){
-                mPoiSearch.searchNearby(getNearbySearchOption(currPage, latLng));
-            }else {
-                mPoiSearch.searchInCity(getCitySearchOption(currPage));
-            }
-
+            SearchNextByMode(currPage);
         }
     };
 
@@ -156,11 +196,7 @@ public class SearchActivity extends AppCompatActivity {
                 return;
             }
             currPage += 1;
-            if(searchMode == 0){
-                mPoiSearch.searchNearby(getNearbySearchOption(currPage, latLng));
-            }else {
-                mPoiSearch.searchInCity(getCitySearchOption(currPage));
-            }
+            SearchNextByMode(currPage);
         }
     };
 
@@ -168,23 +204,28 @@ public class SearchActivity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
             currPage = 0;
-            if(searchMode == 0){
-                mPoiSearch.searchNearby(getNearbySearchOption(currPage, latLng));
-            }else {
-                mPoiSearch.searchInCity(getCitySearchOption(currPage));
-            }
+            SearchNextByMode(currPage);
         }
     };
+
+    private void SearchNextByMode(int currPage){
+        if(searchMode == 0){
+            mPoiSearch.searchNearby(getNearbySearchOption(currPage, latLng));
+        }else {
+            if(searchMode == 1){
+                mPoiSearch.searchInCity(getCitySearchOption(currPage));
+            }
+            else {
+                searchPark(currPage);
+            }
+        }
+    }
 
     View.OnClickListener btn_lastListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             currPage = totalPage - 1;
-            if(searchMode == 0){
-                mPoiSearch.searchNearby(getNearbySearchOption(currPage, latLng));
-            }else {
-                mPoiSearch.searchInCity(getCitySearchOption(currPage));
-            }
+            SearchNextByMode(currPage);
         }
     };
 
@@ -192,24 +233,40 @@ public class SearchActivity extends AppCompatActivity {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             Intent intent = new Intent(SearchActivity.this, MainActivity.class);
-            intent.putExtra("mPoiResult", mPoiResult).putExtra("latLng", mList.get(position).location).putExtra("searchText", searchText).putExtra("index", position);
+            intent.putExtra("mPoiList", mPoiList).putExtra("latLng", mStorageList.get(position).getLocation()).putExtra("index", position);
             startActivity(intent);
             finish();
         }
     };
 
+    private void setPagingVisible(boolean visible){
+        if(visible){
+            lv_result.setVisibility(View.VISIBLE);
+            tv_totalPage.setVisibility(View.VISIBLE);
+            tv_currPage.setVisibility(View.VISIBLE);
+            tv_totalNum.setVisibility(View.VISIBLE);
+            btn_next.setVisibility(View.VISIBLE);
+            btn_pre.setVisibility(View.VISIBLE);
+            btn_first.setVisibility(View.VISIBLE);
+            btn_last.setVisibility(View.VISIBLE);
+        }
+        else {
+            lv_result.setVisibility(View.INVISIBLE);
+            tv_totalPage.setVisibility(View.INVISIBLE);
+            tv_currPage.setVisibility(View.INVISIBLE);
+            tv_totalNum.setVisibility(View.INVISIBLE);
+            btn_next.setVisibility(View.INVISIBLE);
+            btn_pre.setVisibility(View.INVISIBLE);
+            btn_first.setVisibility(View.INVISIBLE);
+            btn_last.setVisibility(View.INVISIBLE);
+        }
+    }
+
     View.OnClickListener btn_nearbySearchListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             if(et_search.getText().toString().equals("") || et_search.getText() == null){
-                lv_result.setVisibility(View.INVISIBLE);
-                tv_totalPage.setVisibility(View.INVISIBLE);
-                tv_currPage.setVisibility(View.INVISIBLE);
-                tv_totalNum.setVisibility(View.INVISIBLE);
-                btn_next.setVisibility(View.INVISIBLE);
-                btn_pre.setVisibility(View.INVISIBLE);
-                btn_first.setVisibility(View.INVISIBLE);
-                btn_last.setVisibility(View.INVISIBLE);
+                setPagingVisible(false);
                 Toast.makeText(SearchActivity.this, "请输入搜索内容", Toast.LENGTH_SHORT).show();
                 return;
             }
@@ -227,21 +284,13 @@ public class SearchActivity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
             if(et_search.getText().toString().equals("") || et_search.getText() == null){
-                lv_result.setVisibility(View.INVISIBLE);
-                tv_totalPage.setVisibility(View.INVISIBLE);
-                tv_currPage.setVisibility(View.INVISIBLE);
-                tv_totalNum.setVisibility(View.INVISIBLE);
-                btn_next.setVisibility(View.INVISIBLE);
-                btn_pre.setVisibility(View.INVISIBLE);
-                btn_first.setVisibility(View.INVISIBLE);
-                btn_last.setVisibility(View.INVISIBLE);
+                setPagingVisible(false);
                 Toast.makeText(SearchActivity.this, "请输入搜索内容", Toast.LENGTH_SHORT).show();
                 return;
             }
             totalPage = 0;
             currPage = 0;
             searchText = et_search.getText().toString();
-            latLng = getIntent().getParcelableExtra("myLatLng");
             mPoiSearch.searchInCity(getCitySearchOption(0));
             searchMode = 1;
             inputManager.hideSoftInputFromWindow(et_search.getWindowToken(), 0);
@@ -250,43 +299,37 @@ public class SearchActivity extends AppCompatActivity {
 
     OnGetPoiSearchResultListener poiResultListener = new OnGetPoiSearchResultListener() {
         @Override
-        public void onGetPoiResult(PoiResult poiResult) {
+        public void onGetPoiResult(final PoiResult poiResult) {
             if (poiResult.error != SearchResult.ERRORNO.NO_ERROR) {
                 Toast.makeText(SearchActivity.this, "未找到结果", Toast.LENGTH_SHORT).show();
-                lv_result.setVisibility(View.INVISIBLE);
-                tv_totalPage.setVisibility(View.INVISIBLE);
-                tv_currPage.setVisibility(View.INVISIBLE);
-                tv_totalNum.setVisibility(View.INVISIBLE);
-                btn_next.setVisibility(View.INVISIBLE);
-                btn_pre.setVisibility(View.INVISIBLE);
-                btn_first.setVisibility(View.INVISIBLE);
-                btn_last.setVisibility(View.INVISIBLE);
+                setPagingVisible(false);
             } else {
-                mPoiResult = poiResult;
                 totalPage = poiResult.getTotalPageNum();
-                mList = poiResult.getAllPoi();
+                List<PoiInfo> mList = poiResult.getAllPoi();
                 int count = mList.size();
                 List<Map<String, Object>> lst = new ArrayList<>();
                 for (int i = 0; i < count; i++) {
                     Map<String, Object> item = new HashMap<>();
                     item.put("name", mList.get(i).name);
                     item.put("address", mList.get(i).address);
-                    item.put("uid", mList.get(i).uid);
                     lst.add(item);
+                    Storage st = new Storage();
+                    st.setName(mList.get(i).name);
+                    st.setAddress(mList.get(i).address);
+                    st.setLocation(mList.get(i).location);
+                    st.setUid("0");
+                    mStorageList.add(st);
                 }
-                SimpleAdapter adpater = new SimpleAdapter(getApplicationContext(), lst, R.layout.list_item, new String[]{"name", "address", "uid"}, new int[]{R.id.tv_name, R.id.tv_address, R.id.tv_uid});
+                mPoiList.setCurrSize(count);
+                mPoiList.setTotalNum(poiResult.getTotalPoiNum());
+                mPoiList.setTotalPage(poiResult.getTotalPageNum());
+                mPoiList.setStorageList(mStorageList);
+                SimpleAdapter adpater = new SimpleAdapter(getApplicationContext(), lst, R.layout.list_item, new String[]{"name", "address"}, new int[]{R.id.tv_name, R.id.tv_address});
                 lv_result.setAdapter(adpater);
                 tv_totalNum.setText("共" + poiResult.getTotalPoiNum() + "条");
                 tv_totalPage.setText("共" + totalPage + "页");
                 tv_currPage.setText("第" + (currPage + 1) + "页");
-                lv_result.setVisibility(View.VISIBLE);
-                tv_totalPage.setVisibility(View.VISIBLE);
-                tv_currPage.setVisibility(View.VISIBLE);
-                tv_totalNum.setVisibility(View.VISIBLE);
-                btn_next.setVisibility(View.VISIBLE);
-                btn_pre.setVisibility(View.VISIBLE);
-                btn_first.setVisibility(View.VISIBLE);
-                btn_last.setVisibility(View.VISIBLE);
+                setPagingVisible(true);
             }
         }
 
@@ -300,4 +343,40 @@ public class SearchActivity extends AppCompatActivity {
 
         }
     };
+
+    View.OnClickListener btn_parkSearchListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            searchPark(currPage);
+            inputManager.hideSoftInputFromWindow(et_search.getWindowToken(), 0);
+        }
+    };
+
+    private void searchPark(final int currPage){
+        SharedPreferences sharedPreferences = getSharedPreferences("setting", Context.MODE_PRIVATE);
+        final LatLng l = new LatLng(Double.parseDouble(sharedPreferences.getString("Latitude", "")), Double.parseDouble(sharedPreferences.getString("Longitude", "")));
+        Thread park = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                mPoiList = Park.getPark(l, currPage);
+                if(mPoiList != null && mPoiList.getCurrSize() == 0){
+                    Message message = new Message();
+                    message.what = 0;
+                    poiHandler.sendMessage(message);
+                }
+                else {
+                    Message message = new Message();
+                    message.what = 1;
+                    message.obj = mPoiList;
+                    poiHandler.sendMessage(message);
+                }
+            }
+        });
+        try{
+            park.start();
+        }
+        catch (Exception e){
+            e.printStackTrace();;
+        }
+    }
 }

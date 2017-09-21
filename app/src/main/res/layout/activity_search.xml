@@ -16,7 +16,7 @@
             android:layout_height="wrap_content">
             <EditText
                 android:id="@+id/et_search"
-                android:layout_width="220dp"
+                android:layout_width="157dp"
                 android:layout_height="48dp"
                 android:hint="@string/et_search_hint"
                 android:maxLines="1"/>
@@ -35,6 +35,14 @@
                 android:layout_toRightOf="@+id/btn_nearbySearch"
                 android:layout_toEndOf="@+id/btn_nearbySearch"
                 android:text="@string/btn_citySearch"
+                style="?android:attr/buttonBarButtonStyle"/>
+            <Button
+                android:id="@+id/btn_parkSearch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/btn_parkSearch"
+                android:layout_toRightOf="@+id/btn_citySearch"
+                android:layout_toEndOf="@+id/btn_citySearch"
                 style="?android:attr/buttonBarButtonStyle"/>
             <ListView
                 android:id="@+id/lv_result"

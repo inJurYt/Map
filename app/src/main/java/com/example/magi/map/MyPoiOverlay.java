@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MyPoiOverlay extends OverlayManager {
-    private PoiResult poiResult = null;
+    private PoiList mPoiList = null;
     private BitmapDrawable mBitmapDrawable;
 
     public MyPoiOverlay(BaiduMap baiduMap, BitmapDrawable mBitmapDrawable) {
@@ -28,8 +28,8 @@ public class MyPoiOverlay extends OverlayManager {
         this.mBitmapDrawable = mBitmapDrawable;
     }
 
-    public void setData(PoiResult poiResult) {
-        this.poiResult = poiResult;
+    public void setData(PoiList mPoiList) {
+        this.mPoiList = mPoiList;
     }
 
     @Override
@@ -44,22 +44,21 @@ public class MyPoiOverlay extends OverlayManager {
 
     @Override
     public List<OverlayOptions> getOverlayOptions() {
-        if ((this.poiResult == null)
-                || (this.poiResult.getAllPoi() == null))
+        if ((this.mPoiList == null) || (this.mPoiList.getCurrSize() == 0))
             return null;
         ArrayList<OverlayOptions> arrayList = new ArrayList<>();
-        for (int i = 0; i < poiResult.getAllPoi().size(); i++) {
-            if (this.poiResult.getAllPoi().get(i).location == null)
+        List<Storage> lst = mPoiList.getStorageList();
+        for (int i = 0; i < lst.size(); i++) {
+            if (lst.get(i).getLocation() == null)
                 continue;
             Bundle bundle = new Bundle();
             bundle.putInt("index", i);
-            bundle.putString("uid", poiResult.getAllPoi().get(i).uid);
-            bundle.putString("name", poiResult.getAllPoi().get(i).name);
+            bundle.putParcelable("info", lst.get(i));
 
             arrayList.add(new MarkerOptions()
                     .icon(BitmapDescriptorFactory
                             .fromBitmap(setNumToIcon(i + 1))).extraInfo(bundle)
-                    .position(poiResult.getAllPoi().get(i).location).extraInfo(bundle));
+                    .position(lst.get(i).getLocation()).extraInfo(bundle));
         }
         return arrayList;
     }
