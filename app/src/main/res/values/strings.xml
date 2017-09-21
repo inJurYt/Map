@@ -15,6 +15,7 @@
     <string name="btn_next">下一页</string>
     <string name="btn_first">首页</string>
     <string name="btn_last">尾页</string>
+    <string name="btn_return">返回</string>
 
     <string name="btn_go">前往</string>
 

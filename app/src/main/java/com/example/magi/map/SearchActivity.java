@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
@@ -40,6 +41,7 @@ public class SearchActivity extends AppCompatActivity {
     private Button btn_next;
     private Button btn_first;
     private Button btn_last;
+    private Button btn_return;
     private Button btn_citySearch;
     private Button btn_nearbySearch;
     private TextView tv_totalPage;
@@ -56,6 +58,7 @@ public class SearchActivity extends AppCompatActivity {
     private InputMethodManager inputManager;
     private PoiList mPoiList;
     private List<Storage> mStorageList;
+    private long firstTime = 0;
 
     final android.os.Handler poiHandler = new android.os.Handler(){
         @Override
@@ -104,12 +107,14 @@ public class SearchActivity extends AppCompatActivity {
         btn_next = (Button)findViewById(R.id.btn_next);
         btn_first = (Button)findViewById(R.id.btn_first);
         btn_last = (Button)findViewById(R.id.btn_last);
+        btn_return = (Button)findViewById(R.id.btn_return);
         btn_citySearch = (Button)findViewById(R.id.btn_citySearch);
         btn_nearbySearch = (Button)findViewById(R.id.btn_nearbySearch);
         tv_currPage = (TextView)findViewById(R.id.currPage);
         tv_totalPage = (TextView)findViewById(R.id.totoalPage);
         tv_totalNum = (TextView)findViewById(R.id.totalNum);
         btn_parkSearch = (Button)findViewById(R.id.btn_parkSearch);
+
 
         inputManager = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
     }
@@ -124,6 +129,7 @@ public class SearchActivity extends AppCompatActivity {
         btn_next.setOnClickListener(btn_nextListener);
         btn_first.setOnClickListener(btn_firstListener);
         btn_last.setOnClickListener(btn_lastListener);
+        btn_return.setOnClickListener(btn_returnListener);
         btn_nearbySearch.setOnClickListener(btn_nearbySearchListener);
         btn_citySearch.setOnClickListener(btn_citySearchListener);
         lv_result.setOnItemClickListener(itemListener);
@@ -379,4 +385,30 @@ public class SearchActivity extends AppCompatActivity {
             e.printStackTrace();;
         }
     }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        switch (keyCode){
+            case KeyEvent.KEYCODE_BACK:
+                long secondTime = System.currentTimeMillis();
+                if(secondTime - firstTime > 2000){
+                    Toast.makeText(SearchActivity.this, "再按一次退出程序", Toast.LENGTH_SHORT).show();
+                    firstTime = secondTime;
+                    return true;
+                }else{
+                    System.exit(0);
+                }
+                break;
+        }
+        return super.onKeyUp(keyCode, event);
+    }
+
+    View.OnClickListener btn_returnListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Intent intent = new Intent(SearchActivity.this, MainActivity.class);
+            startActivity(intent);
+            finish();
+        }
+    };
 }
